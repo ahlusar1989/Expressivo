@@ -51,7 +51,16 @@ public interface Expression {
     public static Expression parse(String input) {
         throw new RuntimeException("unimplemented");
     }
-    
+
+
+    public static Expression make(double num){
+        return new Number(num);
+    }
+
+    public static Expression make(String var){
+        return new Variable(var);
+    }
+
     /**
      * @return a parsable representation of this expression, such that
      * for all e:Expression, e.equals(Expression.parse(e.toString())).
@@ -81,4 +90,14 @@ public interface Expression {
     public static Expression sum(Expression left, Expression right){
         return left;
     }
+
+    public static String make(Expression inputExpression){
+        return inputExpression.toString();
+    }
+
+    public static Expression multiply(Expression left, Expression right){
+        return left;
+    }
+
+
 }

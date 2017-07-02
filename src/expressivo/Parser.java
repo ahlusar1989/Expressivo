@@ -1,20 +1,15 @@
 package expressivo;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
 import expressivo.parser.ExpressionLexer;
 import expressivo.parser.ExpressionListener;
 import expressivo.parser.ExpressionParser;
-import java.util.Stack;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import java.util.List;
+import java.util.Stack;
 
 /**
  * Created by saranahluwalia on 7/2/17.
@@ -46,7 +41,7 @@ public class Parser {
             throw new Error("Error in Parser" + e);
         }
 
-        // TODO return statement here
+        return "";
 
 
     }
@@ -130,9 +125,63 @@ public class Parser {
             // the result is this subtree's Expression
             stack.push(sum);
         }
+        @Override public void enterProduct(ExpressionParser.ProductContext context) {
+        }
 
-        // TODO more void methods
+        @Override public void exitProduct(ExpressionParser.ProductContext context) {
+            //matched the product ('+' product)* rule
+
+            List<ExpressionParser.PrimitiveContext> factors = context.primitive();
+            assert stack.size() >= factors.size();
+
+            //the pattern must have at least 1 child
+            //pop the last child
+            assert factors.size() > 0;
+            Expression product = stack.pop();
+
+            //pop the older children, one by one, and multiply them
+            for(int i = 1; i < factors.size(); ++i){
+                product = Expression.multiply(stack.pop(),product);
+            }
+
+            // the result is this subtree's Expression
+            stack.push(product);
+        }
+
+        @Override public void enterPrimitive(ExpressionParser.PrimitiveContext context) {
+        }
+
+        @Override public void exitPrimitive(ExpressionParser.PrimitiveContext context) {
+            if(context.NUMBER() != null){
+                //matched the number alternative
+                double n = Double.valueOf(context.NUMBER().getText());
+                Expression number = Expression.make(n);
+                stack.push(number);
+            } else if(context.VAR() != null){
+                //matched the VAR alternative
+                String v = context.VAR().getText();
+                Expression var = Expression.make(v);
+                stack.push(var);
+            }
+            else{
+                //matched the '(' sum ')' alternative
+                //do nothing, because sum's value is already on the stack
+            }
+        }
+
+
+        @Override public void visitTerminal(TerminalNode terminal) {
+        }
+
+        // don't need these here, so just make them empty implementations
+        @Override public void enterEveryRule(ParserRuleContext context) {
+        }
+
+        @Override public void exitEveryRule(ParserRuleContext context) {
+        }
+
+        @Override public void visitErrorNode(ErrorNode node) {
+        }
 
     }
-
 }
